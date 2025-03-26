@@ -120,10 +120,11 @@ function warpPoint(
   widthFactor: number,
   heightFactor: number
 ): [number, number] {
-  return [
-    centerX + (x - centerX) * (1 + widthFactor), // Scale X based on width factor
-    centerY + (y - centerY) * (1 + heightFactor), // Scale Y based on height factor
-  ];
+  let newX = x;
+  let newY = y;
+  if (x) newX = centerX + (x - centerX) * (1 + widthFactor);
+  if (y) newY = centerY + (y - centerY) * (1 + heightFactor);
+  return [newX, newY];
 }
 
 /**
@@ -141,145 +142,6 @@ function interpolate(
   return thinValue + (fatValue - thinValue) * multiplier;
 }
 
-// Helper function to scale and translate SVG path
-function scaleAndTranslatePath(
-  path: string,
-  scale: number,
-  x: number,
-  y: number
-): string[] {
-  // Split the path into commands
-  const commands = path.split(/(?=[MLHVCSQTAZmlhvcsqtaz])/);
-
-  // Process each command
-  console.log(
-    commands.map((cmd) => {
-      const type = cmd[0];
-      const coords = cmd
-        .slice(1)
-        .trim()
-        .split(/[\s,]+/)
-        .map(Number);
-
-      // Scale and translate coordinates
-      const scaledCoords = coords.map((coord, i) => {
-        // Scale X coordinates (even indices)
-        if (i % 2 === 0) {
-          return coord * scale + x;
-        }
-        // Scale Y coordinates (odd indices)
-        return coord * scale + y;
-      });
-
-      return `${type}${scaledCoords.join(" ")}`;
-    })
-  );
-  return commands.map((cmd) => {
-    const type = cmd[0];
-    const coords = cmd
-      .slice(1)
-      .trim()
-      .split(/[\s,]+/)
-      .map(Number);
-
-    // Scale and translate coordinates
-    const scaledCoords = coords.map((coord, i) => {
-      // Scale X coordinates (even indices)
-      if (i % 2 === 0) {
-        return coord * scale + x;
-      }
-      // Scale Y coordinates (odd indices)
-      return coord * scale + y;
-    });
-
-    return `${type}${scaledCoords.join(" ")}`;
-  });
-}
-
-/**
- * Interpolates between two values based on the fatMultiplier.
- * @param {CanvasRenderingContext2D} canvas used for rendering the shape
- * @param {string} commands - svg path of the body shape
- * @param {number} centerX - x coordinate of head anchor point
- * @param {number} centerY - y coordinate of head achor point
- * @param {number} heightMultiplier - gene trait used for augmenting height
- * @param {number} widthMultiplier - gene trait used for augmenting width
- * @does draws the path for the body augments relevant points using the fatmultiplier
- */
-function drawHeadSVGPath(
-  ctx: CanvasRenderingContext2D,
-  commands: string[],
-  centerX: number,
-  centerY: number,
-  widthMultiplier: number,
-  heightMultiplier: number
-) {
-  commands.forEach((cmd) => {
-    const type = cmd[0];
-    const coords = cmd
-      .slice(1)
-      .trim()
-      .split(/[\s,]+/)
-      .map(Number);
-
-    let [x1, y1, x2, y2, x, y] = coords;
-
-    switch (type.toUpperCase()) {
-      case "M":
-        [x1, y1] = warpPoint(
-          x1,
-          y1,
-          centerX,
-          centerY,
-          widthMultiplier,
-          heightMultiplier
-        );
-        ctx.moveTo(x1, y1);
-        break;
-      case "L":
-        [x1, y1] = warpPoint(
-          x1,
-          y1,
-          centerX,
-          centerY,
-          widthMultiplier,
-          heightMultiplier
-        );
-        ctx.lineTo(x1, y1);
-        break;
-      case "C":
-        [x1, y1] = warpPoint(
-          x1,
-          y1,
-          centerX,
-          centerY,
-          widthMultiplier,
-          heightMultiplier
-        );
-        [x2, y2] = warpPoint(
-          x2,
-          y2,
-          centerX,
-          centerY,
-          widthMultiplier,
-          heightMultiplier
-        );
-        [x, y] = warpPoint(
-          x,
-          y,
-          centerX,
-          centerY,
-          widthMultiplier,
-          heightMultiplier
-        );
-        ctx.bezierCurveTo(x1, y1, x2, y2, x, y);
-        break;
-      case "Z":
-        ctx.closePath();
-        break;
-    }
-  });
-}
 function warpSVGPath(
   path: string,
   pivot: number[],
@@ -374,55 +236,12 @@ function drawSVGPath(warpedPath: string) {
   });
 }
 
-/**
- * Interpolates between two values based on the fatMultiplier.
- * @param {CanvasRenderingContext2D} canvas used for rendering the shape
- * @param {string[]} commands - svg path of the body shape
- * @param {number} fatMultiplier - gene trait used for augmenting data
- * @does draws the path for the body augments relevant points using the fatmultiplier
- */
-function drawBodySVGPath(
-  ctx: CanvasRenderingContext2D,
-  commands: string[],
-  fatMultiplier: number
-) {
-  commands.forEach((cmd, index) => {
-    const type = cmd[0];
-    const coords = cmd
-      .slice(1)
-      .trim()
-      .split(/[\s,]+/)
-      .map(Number);
-
-    switch (type.toUpperCase()) {
-      case "M":
-        ctx.moveTo(coords[0], coords[1]);
-        break;
-      case "L":
-        ctx.lineTo(coords[0], coords[1]);
-        break;
-      case "C":
-        // Extract control and end points
-        let [x1, y1, x2, y2, x, y] = coords;
-
-        // Apply transformations based on fatMultiplier
-        if (index === 4) {
-          x2 = interpolate(fatMultiplier, 205.36, 197.359);
-          y2 = interpolate(fatMultiplier, 188.808, 235.808);
-          x = interpolate(fatMultiplier, 246, 238);
-          y = interpolate(fatMultiplier, 201, 248);
-        }
-        if (index === 5) {
-          x1 = interpolate(fatMultiplier, 337, 329);
-          y1 = interpolate(fatMultiplier, 228.3, 275.3);
-        }
-
-        ctx.bezierCurveTo(x1, y1, x2, y2, x, y);
-        break;
-      case "Z":
-        ctx.closePath();
-        break;
-    }
+function drawPoints(points: [number, number][]) {
+  ctx.fillStyle = "red"; // Color of the points
+  points.forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2); // Draw a small circle at each point
+    ctx.fill();
   });
 }
 
@@ -497,10 +316,6 @@ function generateEyePositions(
 }
 
 function drawEyes(eyePositions: [number, number][], eyeRadius: number) {
-  ctx.fillStyle = "white";
-  ctx.strokeStyle = "black"; // Set border color
-  ctx.lineWidth = 2; // Adjust border thickness
-
   eyePositions.forEach(([x, y]) => {
     ctx.beginPath();
     ctx.arc(x, y, eyeRadius, 0, Math.PI * 2);
@@ -509,8 +324,24 @@ function drawEyes(eyePositions: [number, number][], eyeRadius: number) {
   });
 }
 
+function bits2hsl(bits: number, bitDepth: number): string {
+  let maxValue = (1 << bitDepth) - 1;
+  let hue = (bits / maxValue) * 360;
+  return `hsl(${hue}, 100%, 50%)`;
+}
+
+import {
+  generateSeparators,
+  extractPointsFromPath,
+  generateMidpoints,
+  thinCreature,
+  drawSeparators,
+  adjustCreatureLength,
+  createFilledShape,
+} from "./utils/torso";
+import { drawHeadShape } from "./utils/head";
 //helper functions end here
-let ctx: CanvasRenderingContext2D;
+export let ctx: CanvasRenderingContext2D;
 
 export function renderCreature(
   traits: CreatureTraits,
@@ -530,82 +361,63 @@ export function renderCreature(
   ctx.save();
 
   //COLOR GENERATION
-  
+  const primaryColorBits = traits.color1;
+  const secondaryColorBits = traits.color2;
+  const colorDepth = TRAIT_DEFINITIONS["color1"].bits;
+  //based on the assumption that both color1 and 2 take the same number of bits
+  const primaryColor = bits2hsl(primaryColorBits, colorDepth);
+  const secondaryColor = bits2hsl(secondaryColorBits, colorDepth);
+
+  //draw all torso related parts first using the primary color
+  ctx.fillStyle = primaryColor;
+  //path of the central anchor for drawing everything else
+  const torsoPath =
+    "M146.5 138L193 188.5L250 203L284 234L296 276L237 297L150 254L115 168Z";
+  const maxTorsoLength = 1 << TRAIT_DEFINITIONS["torsoLength"].bits;
+  const maxTorsoWidth = 1 << TRAIT_DEFINITIONS["torsoWidth"].bits;
+  const torsoWidthFactor = traits.torsoWidth / maxTorsoWidth;
+  const torsoLengthFactor = traits.torsoLength / maxTorsoLength;
+
+  const maxHeadWidth = 1 << TRAIT_DEFINITIONS["headWidth"].bits;
+  const maxHeadLength = 1 << TRAIT_DEFINITIONS["headLength"].bits;
+  const headWidthFactor = traits.headWidth / maxHeadWidth;
+  const headLengthFactor = traits.headLength / maxHeadLength;
+
+  const eyeCount = traits.eyeCount;
+
+  //gets the defining points of the torso
+  let torsoPoints = extractPointsFromPath(torsoPath);
+  //body segment separators
+  const separators = generateSeparators(torsoPoints);
+  //generate initial midpoints
+  const midpoints = generateMidpoints(separators);
+  // Adjust separator length (creates new separators) based on length modifier
+  const lengthSeparators = adjustCreatureLength(
+    separators,
+    midpoints,
+    torsoLengthFactor
+  );
+  // Generate NEW midpoints based on the length-adjusted separators
+  const newMidpoints = generateMidpoints(lengthSeparators);
+  // After creating the body separators
+  const widthLengthSeparators = thinCreature(
+    lengthSeparators,
+    newMidpoints,
+    torsoWidthFactor,
+    headWidthFactor
+  );
+
+  // Drawing steps for debuggin
+  drawPoints(newMidpoints);
+  drawPoints(torsoPoints);
+  drawSeparators(widthLengthSeparators);
+  createFilledShape(widthLengthSeparators);
+
+  // Draw the head separator
+  drawHeadShape(widthLengthSeparators[0]);
 
   //HEAD GENERATION
-  const headPivot = [161.5, 212.5];
-  const baseHeadPath =
-    "M117.964 185.527C154.993 164.265 167.166 180.066 168.624 190.624C175.306 209.435 178.785 231.724 160.416 222.695C147.66 216.425 149.758 221.967 137.819 222.695C125.886 223.423 107.933 227.496 100.279 222.695C84.6069 212.865 80.9341 206.79 117.964 185.527Z";
 
-  //const scaledHeadPath = scaleAndTranslatePath(baseHeadPath, 1, 0, 0);
-
-  const maxLength = Math.floor(
-    Math.pow(2, TRAIT_DEFINITIONS["headLength"].bits)
-  );
-  const maxWidth = Math.floor(Math.pow(2, TRAIT_DEFINITIONS["headWidth"].bits));
-  const widthFactor = traits.headWidth / maxWidth;
-  const lengthFactor = traits.headLength / maxLength;
-
-  const warpedHeadPath = warpSVGPath(
-    baseHeadPath,
-    headPivot,
-    widthFactor,
-    lengthFactor
-  );
-
-  ctx.beginPath();
-  drawSVGPath(warpedHeadPath);
-
-  // const { minX, maxX, minY, maxY } = getScaledMask(
-  //   scaledEyePath,
-  //   headPivot[0],
-  //   headPivot[1],
-  //   widthFactor,
-  //   lengthFactor
-  // );
-  const eyePath =
-    "M107 193C117 183 140.166 176.833 150.5 175C165.7 175.8 171.167 195.333 172 205L155 199.5C134.833 201.5 96.9998 203 107 193Z";
-  // const scaledEyePath = scaleAndTranslatePath(eyePath, 1, 0, 0);
-  const warpedEyePath = warpSVGPath(
-    eyePath,
-    headPivot,
-    widthFactor,
-    lengthFactor
-  );
-  // // Generate eye positions
-  //needs eyeballs
-  const eyeRadius = 8; // Adjust as needed
-  const eyeCount = traits.eyeCount + 1;
-  const { minX, maxX, minY, maxY } = getBounds(warpedEyePath);
-  const eyePositions = generateEyePositions(
-    warpedHeadPath,
-    minX,
-    maxX,
-    minY,
-    maxY,
-    eyeRadius,
-    eyeCount
-  );
   ctx.fill();
-
-  drawEyes(eyePositions, eyeRadius);
-
-  //BODY GENERATION
-  //use two size as torso width
-  const shortTorso =
-    "M345 283C374 300 279 303 204 289C161.562 281.078 153.779 248.907 142 213L166.755 193C179.034 215.958 197.359 235.808 238 248C329 275.3 313.671 264.635 345 283Z";
-  const longTorso =
-    "M204 289C129 275 133 204 106 123L118 102C167.886 155.004 147 220.7 238 248C329 275.3 313.671 264.635 345 283C374 300 279 303 204 289Z";
-
-  const bodyPath = traits.torsoLength ? longTorso : shortTorso;
-
-  ctx.beginPath();
-  const scaledBodyPath = scaleAndTranslatePath(bodyPath, 1, 0, 0);
-  const maxFat = Math.floor(Math.pow(2, TRAIT_DEFINITIONS["torsoLength"].bits));
-  const fatMultiplier = 1 - traits.torsoWidth / maxFat;
-  drawBodySVGPath(ctx, scaledBodyPath, fatMultiplier);
-  ctx.fill();
-  ctx.restore();
-
   return canvas.toDataURL();
 }
