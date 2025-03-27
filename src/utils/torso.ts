@@ -52,7 +52,7 @@ function thinCreature(
 ): Separator[] {
   return separators.map(([p1, p2], index) => {
     const midpoint = midpoints[index];
-//remvoe the headwidth thing its dumb
+    //remvoe the headwidth thing its dumb
     // Use head width factor for the first separator, otherwise use torso width factor
     const widthFactor =
       index === 0 && headWidthFactor !== undefined
@@ -86,7 +86,6 @@ function drawSeparators(separators: Separator[], color: string = "black") {
 }
 function adjustCreatureLength(
   separators: Separator[],
-  midpoints: Point[],
   lengthFactor: number
 ): Separator[] {
   lengthFactor /= 2.5;
@@ -211,7 +210,10 @@ function adjustCreatureLength(
 
   return adjustedSeparators;
 }
-function createFilledShape(separators: Separator[]) {
+function createFilledShape(
+  separators: Separator[],
+  fillColor: string | CanvasGradient
+) {
   // Reset the path
   ctx.beginPath();
 
@@ -230,16 +232,8 @@ function createFilledShape(separators: Separator[]) {
 
   // Close the path
   ctx.closePath();
-
-  // Optional: set fill style
-  ctx.fillStyle = "rgba(0, 0, 0, 0.5)"; // Semi-transparent black
-
-  // Fill the shape
+  ctx.fillStyle = fillColor;
   ctx.fill();
-
-  // Optional: add an outline
-  ctx.strokeStyle = "black";
-  ctx.stroke();
 }
 function getMidpointBetweenSeparators(
   separator1: Separator,

@@ -92,7 +92,7 @@ function generateLimbs(
   return limbs;
 }
 
-function drawLimbs(limbs: Limb[]): void {
+function drawLimbs(limbs: Limb[], accentColor: string | CanvasGradient): void {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
@@ -135,7 +135,7 @@ function drawLimbs(limbs: Limb[]): void {
 
     // Draw upper segment (angled outward)
     ctx.lineWidth = thickness;
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = accentColor;
 
     ctx.beginPath();
     ctx.moveTo(base[0], base[1]);

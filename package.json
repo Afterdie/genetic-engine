@@ -3,17 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "npx esbuild src/geneDecoder.ts --bundle --format=esm --outfile=dist/geneDecoder.js --out-extension:.js=.js",
+    "minify": "npx terser dist/geneDecoder.js --compress --mangle --output dist/mini/geneDecoder.min.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "terser": "^5.39.0",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.3"
+    "typescript": "^5.8.2"
   }
 }

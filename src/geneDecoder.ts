@@ -114,20 +114,20 @@ const TRAIT_DEFINITIONS: Record<keyof CreatureTraits, TraitDefinition> = {
 import { Point } from "./utils/torso";
 
 //add definition later
-function warpPoint(
-  x: number,
-  y: number,
-  centerX: number,
-  centerY: number,
-  widthFactor: number,
-  heightFactor: number
-): Point {
-  let newX = x;
-  let newY = y;
-  if (x) newX = centerX + (x - centerX) * (1 + widthFactor);
-  if (y) newY = centerY + (y - centerY) * (1 + heightFactor);
-  return [newX, newY];
-}
+// function warpPoint(
+//   x: number,
+//   y: number,
+//   centerX: number,
+//   centerY: number,
+//   widthFactor: number,
+//   heightFactor: number
+// ): Point {
+//   let newX = x;
+//   let newY = y;
+//   if (x) newX = centerX + (x - centerX) * (1 + widthFactor);
+//   if (y) newY = centerY + (y - centerY) * (1 + heightFactor);
+//   return [newX, newY];
+// }
 
 /**
  * Interpolates between two values based on the fatMultiplier.
@@ -136,13 +136,13 @@ function warpPoint(
  * @param {number} fatValue - Value in fattest state
  * @returns {number} Interpolated value
  */
-function interpolate(
-  multiplier: number,
-  thinValue: number,
-  fatValue: number
-): number {
-  return thinValue + (fatValue - thinValue) * multiplier;
-}
+// function interpolate(
+//   multiplier: number,
+//   thinValue: number,
+//   fatValue: number
+// ): number {
+//   return thinValue + (fatValue - thinValue) * multiplier;
+// }
 function rotateLeft<T>(arr: T[], k: number): T[] {
   if (arr.length === 0) return arr;
   k = k % arr.length;
@@ -159,182 +159,187 @@ function movePoints(
   return points.map(([x, y]) => [x + dx, y + dy]);
 }
 
-function warpSVGPath(
-  path: string,
-  pivot: number[],
-  widthFactor: number,
-  heightFactor: number
+// function warpSVGPath(
+//   path: string,
+//   pivot: number[],
+//   widthFactor: number,
+//   heightFactor: number
+// ): string {
+//   const commands = path.split(/(?=[MLHVCSQTAZmlhvcsqtaz])/);
+//   return commands
+//     .map((cmd) => {
+//       const type = cmd[0];
+//       const coords = cmd
+//         .slice(1)
+//         .trim()
+//         .split(/[\s,]+/)
+//         .map(Number);
+
+//       let [x1, y1, x2, y2, x, y] = coords;
+
+//       switch (type.toUpperCase()) {
+//         case "M":
+//         case "L":
+//           [x1, y1] = warpPoint(
+//             x1,
+//             y1,
+//             pivot[0],
+//             pivot[1],
+//             widthFactor,
+//             heightFactor
+//           );
+//           return `${type}${x1},${y1}`;
+//         case "C":
+//           [x1, y1] = warpPoint(
+//             x1,
+//             y1,
+//             pivot[0],
+//             pivot[1],
+//             widthFactor,
+//             heightFactor
+//           );
+//           [x2, y2] = warpPoint(
+//             x2,
+//             y2,
+//             pivot[0],
+//             pivot[1],
+//             widthFactor,
+//             heightFactor
+//           );
+//           [x, y] = warpPoint(
+//             x,
+//             y,
+//             pivot[0],
+//             pivot[1],
+//             widthFactor,
+//             heightFactor
+//           );
+//           return `${type}${x1},${y1} ${x2},${y2} ${x},${y}`;
+//         case "Z":
+//           return type;
+//         default:
+//           return cmd;
+//       }
+//     })
+//     .join(" ");
+// }
+
+// function drawSVGPath(warpedPath: string) {
+//   const commands = warpedPath.split(/(?=[MLHVCSQTAZmlhvcsqtaz])/);
+//   commands.forEach((cmd) => {
+//     const type = cmd[0];
+//     const coords = cmd
+//       .slice(1)
+//       .trim()
+//       .split(/[\s,]+/)
+//       .map(Number);
+
+//     let [x1, y1, x2, y2, x, y] = coords;
+
+//     switch (type.toUpperCase()) {
+//       case "M":
+//         ctx.moveTo(x1, y1);
+//         break;
+//       case "L":
+//         ctx.lineTo(x1, y1);
+//         break;
+//       case "C":
+//         ctx.bezierCurveTo(x1, y1, x2, y2, x, y);
+//         break;
+//       case "Z":
+//         ctx.closePath();
+//         break;
+//     }
+//   });
+// }
+
+// function drawPoints(points: [number, number][], color: string) {
+//   ctx.fillStyle = color; // Color of the points
+//   points.forEach(([x, y]) => {
+//     ctx.beginPath();
+//     ctx.arc(x, y, 5, 0, Math.PI * 2); // Draw a small circle at each point
+//     ctx.fill();
+//   });
+// }
+
+// function getBounds(warpedMaskPath: string): {
+//   minX: number;
+//   maxX: number;
+//   minY: number;
+//   maxY: number;
+// } {
+//   let minX = Infinity,
+//     maxX = -Infinity,
+//     minY = Infinity,
+//     maxY = -Infinity;
+//   const warpedMaskArray = warpedMaskPath.split(/(?=[MLHVCSQTAZmlhvcsqtaz])/);
+//   warpedMaskArray.pop();
+//   warpedMaskArray.map((cmd) => {
+//     const coords = cmd
+//       .slice(1)
+//       .trim()
+//       .split(/[\s,]+/)
+//       .map(Number);
+//     let [x, y] = coords;
+
+//     // Update mask boundaries
+//     minX = Math.min(minX, x);
+//     maxX = Math.max(maxX, x);
+//     minY = Math.min(minY, y);
+//     maxY = Math.max(maxY, y);
+
+//     return [x, y] as [number, number];
+//   });
+
+//   return { minX, maxX, minY, maxY };
+// }
+
+// function generateEyePositions(
+//   svgPathString: string, // Array of path commands
+//   minX: number,
+//   maxX: number,
+//   minY: number,
+//   maxY: number,
+//   eyeRadius: number,
+//   numEyes: number
+// ): [number, number][] {
+//   let positions: [number, number][] = [];
+//   let headPath = new Path2D(svgPathString); // Convert to Path2D
+
+//   function isOverlapping(x: number, y: number) {
+//     return positions.some(
+//       ([px, py]) => Math.hypot(px - x, py - y) < eyeRadius * 2
+//     );
+//   }
+
+//   for (let i = 0; i < numEyes; i++) {
+//     let attempts = 0;
+//     let x, y;
+//     do {
+//       x = Math.random() * (maxX - minX - eyeRadius * 2) + minX + eyeRadius;
+//       y = Math.random() * (maxY - minY - eyeRadius * 2) + minY + eyeRadius;
+//       attempts++;
+//     } while (
+//       (isOverlapping(x, y) || !ctx.isPointInPath(headPath, x, y)) &&
+//       attempts < 20
+//     );
+
+//     if (attempts < 20) {
+//       positions.push([x, y]);
+//     }
+//   }
+
+//   return positions;
+// }
+function bits2hsl(
+  bits: number,
+  bitDepth: number,
+  saturation: number,
+  lightness: number
 ): string {
-  const commands = path.split(/(?=[MLHVCSQTAZmlhvcsqtaz])/);
-  return commands
-    .map((cmd) => {
-      const type = cmd[0];
-      const coords = cmd
-        .slice(1)
-        .trim()
-        .split(/[\s,]+/)
-        .map(Number);
-
-      let [x1, y1, x2, y2, x, y] = coords;
-
-      switch (type.toUpperCase()) {
-        case "M":
-        case "L":
-          [x1, y1] = warpPoint(
-            x1,
-            y1,
-            pivot[0],
-            pivot[1],
-            widthFactor,
-            heightFactor
-          );
-          return `${type}${x1},${y1}`;
-        case "C":
-          [x1, y1] = warpPoint(
-            x1,
-            y1,
-            pivot[0],
-            pivot[1],
-            widthFactor,
-            heightFactor
-          );
-          [x2, y2] = warpPoint(
-            x2,
-            y2,
-            pivot[0],
-            pivot[1],
-            widthFactor,
-            heightFactor
-          );
-          [x, y] = warpPoint(
-            x,
-            y,
-            pivot[0],
-            pivot[1],
-            widthFactor,
-            heightFactor
-          );
-          return `${type}${x1},${y1} ${x2},${y2} ${x},${y}`;
-        case "Z":
-          return type;
-        default:
-          return cmd;
-      }
-    })
-    .join(" ");
-}
-
-function drawSVGPath(warpedPath: string) {
-  const commands = warpedPath.split(/(?=[MLHVCSQTAZmlhvcsqtaz])/);
-  commands.forEach((cmd) => {
-    const type = cmd[0];
-    const coords = cmd
-      .slice(1)
-      .trim()
-      .split(/[\s,]+/)
-      .map(Number);
-
-    let [x1, y1, x2, y2, x, y] = coords;
-
-    switch (type.toUpperCase()) {
-      case "M":
-        ctx.moveTo(x1, y1);
-        break;
-      case "L":
-        ctx.lineTo(x1, y1);
-        break;
-      case "C":
-        ctx.bezierCurveTo(x1, y1, x2, y2, x, y);
-        break;
-      case "Z":
-        ctx.closePath();
-        break;
-    }
-  });
-}
-
-function drawPoints(points: [number, number][], color: string) {
-  ctx.fillStyle = color; // Color of the points
-  points.forEach(([x, y]) => {
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2); // Draw a small circle at each point
-    ctx.fill();
-  });
-}
-
-function getBounds(warpedMaskPath: string): {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-} {
-  let minX = Infinity,
-    maxX = -Infinity,
-    minY = Infinity,
-    maxY = -Infinity;
-  const warpedMaskArray = warpedMaskPath.split(/(?=[MLHVCSQTAZmlhvcsqtaz])/);
-  warpedMaskArray.pop();
-  warpedMaskArray.map((cmd) => {
-    const coords = cmd
-      .slice(1)
-      .trim()
-      .split(/[\s,]+/)
-      .map(Number);
-    let [x, y] = coords;
-
-    // Update mask boundaries
-    minX = Math.min(minX, x);
-    maxX = Math.max(maxX, x);
-    minY = Math.min(minY, y);
-    maxY = Math.max(maxY, y);
-
-    return [x, y] as [number, number];
-  });
-
-  return { minX, maxX, minY, maxY };
-}
-
-function generateEyePositions(
-  svgPathString: string, // Array of path commands
-  minX: number,
-  maxX: number,
-  minY: number,
-  maxY: number,
-  eyeRadius: number,
-  numEyes: number
-): [number, number][] {
-  let positions: [number, number][] = [];
-  let headPath = new Path2D(svgPathString); // Convert to Path2D
-
-  function isOverlapping(x: number, y: number) {
-    return positions.some(
-      ([px, py]) => Math.hypot(px - x, py - y) < eyeRadius * 2
-    );
-  }
-
-  for (let i = 0; i < numEyes; i++) {
-    let attempts = 0;
-    let x, y;
-    do {
-      x = Math.random() * (maxX - minX - eyeRadius * 2) + minX + eyeRadius;
-      y = Math.random() * (maxY - minY - eyeRadius * 2) + minY + eyeRadius;
-      attempts++;
-    } while (
-      (isOverlapping(x, y) || !ctx.isPointInPath(headPath, x, y)) &&
-      attempts < 20
-    );
-
-    if (attempts < 20) {
-      positions.push([x, y]);
-    }
-  }
-
-  return positions;
-}
-function bits2hsl(bits: number, bitDepth: number): string {
   let maxValue = (1 << bitDepth) - 1;
   let hue = (bits / maxValue) * 360;
-  return `hsl(${hue}, 100%, 50%)`;
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 import {
@@ -342,10 +347,8 @@ import {
   extractPointsFromPath,
   generateMidpoints,
   thinCreature,
-  drawSeparators,
   adjustCreatureLength,
   createFilledShape,
-  Separator,
 } from "./utils/torso";
 import { drawHeadShape } from "./utils/head";
 
@@ -381,8 +384,10 @@ export function renderCreature(
   const secondaryColorBits = traits.color2;
   const colorDepth = TRAIT_DEFINITIONS["color1"].bits;
   //based on the assumption that both color1 and 2 take the same number of bits
-  const primaryColor = bits2hsl(primaryColorBits, colorDepth);
-  const secondaryColor = bits2hsl(secondaryColorBits, colorDepth);
+  const primaryColor = bits2hsl(primaryColorBits, colorDepth, 80, 45);
+  const accentColor = bits2hsl(primaryColorBits, colorDepth, 70, 40);
+  const darkColor = bits2hsl(primaryColorBits, colorDepth, 60, 30);
+  const secondaryColor = bits2hsl(secondaryColorBits, colorDepth, 100, 50);
 
   //draw all torso related parts first using the primary color
   ctx.fillStyle = primaryColor;
@@ -392,9 +397,9 @@ export function renderCreature(
   const torsoWidthFactor = traits.torsoWidth / maxTorsoWidth;
   const torsoLengthFactor = traits.torsoLength / maxTorsoLength;
 
-  const maxHeadWidth = 1 << TRAIT_DEFINITIONS["headWidth"].bits;
+  //const maxHeadWidth = 1 << TRAIT_DEFINITIONS["headWidth"].bits;
   const maxHeadLength = 1 << TRAIT_DEFINITIONS["headLength"].bits;
-  const headWidthFactor = traits.headWidth / maxHeadWidth;
+  //const headWidthFactor = traits.headWidth / maxHeadWidth;
   const headLengthFactor = traits.headLength / maxHeadLength;
 
   const maxTailWidth = 1 << TRAIT_DEFINITIONS["tailWidth"].bits;
@@ -423,14 +428,8 @@ export function renderCreature(
   //body segment separators
   //make this a util function later
   const separators = generateSeparators(torsoPoints);
-  //generate initial midpoints
-  const midpoints = generateMidpoints(separators);
   // Adjust separator length (creates new separators) based on length modifier
-  const lengthSeparators = adjustCreatureLength(
-    separators,
-    midpoints,
-    torsoLengthFactor
-  );
+  const lengthSeparators = adjustCreatureLength(separators, torsoLengthFactor);
   // Generate NEW midpoints based on the length-adjusted separators
   const newMidpoints = generateMidpoints(lengthSeparators);
   // After creating the body separators
@@ -442,11 +441,14 @@ export function renderCreature(
   const torsoTailAnchor = generateMidpoints([
     widthLengthSeparators[widthLengthSeparators.length - 1],
   ])[0];
-  drawPoints([torsoTailAnchor], "purple");
+  //drawPoints([torsoTailAnchor], "purple");
   // Drawing steps for debuggin
-  drawPoints(torsoPoints, "green");
-  drawSeparators(widthLengthSeparators);
-  createFilledShape(widthLengthSeparators);
+  //drawPoints(torsoPoints, "green");
+  //drawSeparators(widthLengthSeparators);
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, primaryColor);
+  gradient.addColorStop(1, traits.shiny ? secondaryColor : accentColor);
+  createFilledShape(widthLengthSeparators, gradient);
 
   const tailPath =
     "M88.5 11.5L8.5 4.5L6.25 26.75L4 49L8.5 90L32.5 130.5L71 154.5L117.5 138.5L126.5 60.5L88.5 11.5Z";
@@ -476,9 +478,12 @@ export function renderCreature(
     tailWidthFactor,
     torsoWidthFactor
   );
-  drawSeparators(tailwidthLengthSeparators);
-  drawPoints(tailPoints, "yellow");
-  createFilledShape(tailwidthLengthSeparators);
+  //drawSeparators(tailwidthLengthSeparators);
+  //drawPoints(tailPoints, "yellow");
+  const shinyTailGradient = ctx.createLinearGradient(0, 180, 0, 400);
+  shinyTailGradient.addColorStop(0, primaryColor);
+  shinyTailGradient.addColorStop(1, secondaryColor);
+  createFilledShape(tailwidthLengthSeparators, shinyTailGradient);
 
   // Draw the head separator
 
@@ -490,7 +495,7 @@ export function renderCreature(
   //LIMBS ATTACHING
   const spinePoints = newMidpoints.slice(1) as [Point, Point, Point];
   const limbAttachPoints = generateLimbAttachmentPoints(spinePoints, 10);
-  drawPoints(limbAttachPoints, "blue");
+  //drawPoints(limbAttachPoints, "blue");
 
   //not the best option but oh well
   const baseLimbWidth = limbCount > 5 ? 10 : 15;
@@ -503,7 +508,11 @@ export function renderCreature(
     limbWidth,
     limbLength
   );
-  drawLimbs(limbs);
+  const limbGradient = ctx.createLinearGradient(0, 180, 0, 300);
+  limbGradient.addColorStop(0, primaryColor);
+  limbGradient.addColorStop(1, traits.shiny ? secondaryColor : darkColor);
+
+  drawLimbs(limbs, limbGradient);
 
   return canvas.toDataURL();
 }
