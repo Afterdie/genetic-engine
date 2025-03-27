@@ -1,11 +1,20 @@
 import { Separator, Point } from "./torso";
 import { ctx } from "../geneDecoder";
-function generateHeadShape(firstSeparator: Separator): Point[] {
+function generateHeadShape(
+  firstSeparator: Separator,
+  lengthFactor: number
+): Point[] {
   const [topPoint, bottomPoint] = firstSeparator;
-
+  lengthFactor /= 2;
   // Create points 50px to the left for both top and bottom points
-  const headTopLeft: Point = [topPoint[0] - 50, topPoint[1]];
-  const headBottomLeft: Point = [bottomPoint[0] - 50, bottomPoint[1] + 10];
+  const headTopLeft: Point = [
+    topPoint[0] * (1 - lengthFactor) - 40,
+    topPoint[1],
+  ];
+  const headBottomLeft: Point = [
+    bottomPoint[0] * (1 - lengthFactor) - 20,
+    bottomPoint[1] - 10,
+  ];
 
   // Return the points in a specific order for path creation
   return [
@@ -17,8 +26,11 @@ function generateHeadShape(firstSeparator: Separator): Point[] {
 }
 
 // Function to create a filled head shape
-export function drawHeadShape(firstSeparator: Separator) {
-  const headPoints = generateHeadShape(firstSeparator);
+export function drawHeadShape(
+  firstSeparator: Separator,
+  lengthFactor: number
+): Point[] {
+  const headPoints = generateHeadShape(firstSeparator, lengthFactor);
 
   ctx.beginPath();
 
@@ -40,4 +52,6 @@ export function drawHeadShape(firstSeparator: Separator) {
   // Fill the shape
   ctx.fillStyle = "black";
   ctx.fill();
+
+  return headPoints;
 }

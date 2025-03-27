@@ -141,6 +141,21 @@ function interpolate(
 ): number {
   return thinValue + (fatValue - thinValue) * multiplier;
 }
+function rotateLeft<T>(arr: T[], k: number): T[] {
+  if (arr.length === 0) return arr;
+  k = k % arr.length;
+  return [...arr.slice(k), ...arr.slice(0, k)];
+}
+function movePoints(
+  points: Point[],
+  fromAnchor: Point,
+  toAnchor: Point
+): Point[] {
+  const dx = toAnchor[0] - fromAnchor[0];
+  const dy = toAnchor[1] - fromAnchor[1];
+
+  return points.map(([x, y]) => [x + dx, y + dy]);
+}
 
 function warpSVGPath(
   path: string,
@@ -236,8 +251,8 @@ function drawSVGPath(warpedPath: string) {
   });
 }
 
-function drawPoints(points: [number, number][]) {
-  ctx.fillStyle = "red"; // Color of the points
+function drawPoints(points: [number, number][], color: string) {
+  ctx.fillStyle = color; // Color of the points
   points.forEach(([x, y]) => {
     ctx.beginPath();
     ctx.arc(x, y, 5, 0, Math.PI * 2); // Draw a small circle at each point
@@ -314,16 +329,6 @@ function generateEyePositions(
 
   return positions;
 }
-
-function drawEyes(eyePositions: [number, number][], eyeRadius: number) {
-  eyePositions.forEach(([x, y]) => {
-    ctx.beginPath();
-    ctx.arc(x, y, eyeRadius, 0, Math.PI * 2);
-    ctx.fill(); // Fill the eye
-    ctx.stroke(); // Draw the border
-  });
-}
-
 function bits2hsl(bits: number, bitDepth: number): string {
   let maxValue = (1 << bitDepth) - 1;
   let hue = (bits / maxValue) * 360;
@@ -338,8 +343,10 @@ import {
   drawSeparators,
   adjustCreatureLength,
   createFilledShape,
+  Separator,
 } from "./utils/torso";
 import { drawHeadShape } from "./utils/head";
+import { getEyeRegion, generateRandomEyes, drawEyes } from "./utils/eyes";
 //helper functions end here
 export let ctx: CanvasRenderingContext2D;
 
@@ -371,8 +378,6 @@ export function renderCreature(
   //draw all torso related parts first using the primary color
   ctx.fillStyle = primaryColor;
   //path of the central anchor for drawing everything else
-  const torsoPath =
-    "M146.5 138L193 188.5L250 203L284 234L296 276L237 297L150 254L115 168Z";
   const maxTorsoLength = 1 << TRAIT_DEFINITIONS["torsoLength"].bits;
   const maxTorsoWidth = 1 << TRAIT_DEFINITIONS["torsoWidth"].bits;
   const torsoWidthFactor = traits.torsoWidth / maxTorsoWidth;
@@ -383,11 +388,24 @@ export function renderCreature(
   const headWidthFactor = traits.headWidth / maxHeadWidth;
   const headLengthFactor = traits.headLength / maxHeadLength;
 
-  const eyeCount = traits.eyeCount;
+  const maxTailWidth = 1 << TRAIT_DEFINITIONS["tailWidth"].bits;
+  const maxTailLength = 1 << TRAIT_DEFINITIONS["tailLength"].bits;
+  const tailWidthFactor = traits.tailWidth / maxTailWidth;
+  const tailLengthFactor = traits.tailLength / maxTailLength;
 
+  const eyeCount = traits.eyeCount;
+  const eyeRadius = 8;
+
+  //BODY GENERATION
+  const torsoPath =
+    "M187 178L140.5 128.5L108.5 157.5L144 243L231 286L273 268L277.5 223.5L244 192.5L187 178Z";
   //gets the defining points of the torso
   let torsoPoints = extractPointsFromPath(torsoPath);
+  //remove the first since copy
+  torsoPoints = torsoPoints.slice(1);
+  torsoPoints = rotateLeft(torsoPoints, 1);
   //body segment separators
+  //make this a util function later
   const separators = generateSeparators(torsoPoints);
   //generate initial midpoints
   const midpoints = generateMidpoints(separators);
@@ -406,18 +424,53 @@ export function renderCreature(
     torsoWidthFactor,
     headWidthFactor
   );
-
+  const torsoTailAnchor = generateMidpoints([
+    widthLengthSeparators[widthLengthSeparators.length - 1],
+  ])[0];
+  drawPoints([torsoTailAnchor], "purple");
   // Drawing steps for debuggin
-  drawPoints(newMidpoints);
-  drawPoints(torsoPoints);
+  drawPoints(torsoPoints, "green");
   drawSeparators(widthLengthSeparators);
   createFilledShape(widthLengthSeparators);
 
+  const tailPath =
+    "M88.5 11.5L8.5 4.5L6.25 26.75L4 49L8.5 90L32.5 130.5L71 154.5L117.5 138.5L126.5 60.5L88.5 11.5Z";
+  let tailPoints = extractPointsFromPath(tailPath);
+  //remove the first since copy
+  tailPoints = tailPoints.slice(1);
+  //extract the anchor point
+  const tailTorsoAnchor = tailPoints.splice(1, 1)[0];
+  tailPoints = rotateLeft(tailPoints, 1);
+  tailPoints = movePoints(tailPoints, tailTorsoAnchor, torsoTailAnchor);
+  //tail segment separators
+  const tailSeparators = generateSeparators(tailPoints);
+  //generate initial midpoints
+  const tailMidpoints = generateMidpoints(separators);
+  // Adjust separator length (creates new separators) based on length modifier
+  const tailLengthSeparators = adjustCreatureLength(
+    tailSeparators,
+    tailMidpoints,
+    tailLengthFactor
+  );
+  // Generate NEW midpoints based on the length-adjusted separators
+  const newTailMidpoints = generateMidpoints(tailLengthSeparators);
+  // After creating the body separators
+  const tailwidthLengthSeparators = thinCreature(
+    tailLengthSeparators,
+    newTailMidpoints,
+    tailWidthFactor,
+    torsoWidthFactor
+  );
+  drawSeparators(tailwidthLengthSeparators);
+  drawPoints(tailPoints, "yellow");
+  createFilledShape(tailwidthLengthSeparators);
+
   // Draw the head separator
-  drawHeadShape(widthLengthSeparators[0]);
+  
+  const headPoints = drawHeadShape(widthLengthSeparators[0], headLengthFactor);
+  const eyeRegion = getEyeRegion(headPoints);
+  const eyes = generateRandomEyes(eyeRegion, eyeCount);
+  drawEyes(eyes, eyeRadius);
 
-  //HEAD GENERATION
-
-  ctx.fill();
   return canvas.toDataURL();
 }

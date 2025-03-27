@@ -52,11 +52,12 @@ function thinCreature(
 ): Separator[] {
   return separators.map(([p1, p2], index) => {
     const midpoint = midpoints[index];
-    
+
     // Use head width factor for the first separator, otherwise use torso width factor
-    const widthFactor = index === 0 && headWidthFactor !== undefined 
-      ? headWidthFactor 
-      : torsoWidthFactor;
+    const widthFactor =
+      index === 0 && headWidthFactor !== undefined
+        ? headWidthFactor
+        : torsoWidthFactor;
 
     // Move each point closer to the midpoint based on factor
     const newP1: Point = [
