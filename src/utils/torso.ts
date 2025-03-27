@@ -52,7 +52,7 @@ function thinCreature(
 ): Separator[] {
   return separators.map(([p1, p2], index) => {
     const midpoint = midpoints[index];
-
+//remvoe the headwidth thing its dumb
     // Use head width factor for the first separator, otherwise use torso width factor
     const widthFactor =
       index === 0 && headWidthFactor !== undefined

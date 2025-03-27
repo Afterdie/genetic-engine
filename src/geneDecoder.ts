@@ -426,8 +426,7 @@ export function renderCreature(
   const widthLengthSeparators = thinCreature(
     lengthSeparators,
     newMidpoints,
-    torsoWidthFactor,
-    headWidthFactor
+    torsoWidthFactor
   );
   const torsoTailAnchor = generateMidpoints([
     widthLengthSeparators[widthLengthSeparators.length - 1],
