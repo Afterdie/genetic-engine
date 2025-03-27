@@ -111,6 +111,8 @@ const TRAIT_DEFINITIONS: Record<keyof CreatureTraits, TraitDefinition> = {
 };
 */
 
+import { Point } from "./utils/torso";
+
 //add definition later
 function warpPoint(
   x: number,
@@ -119,7 +121,7 @@ function warpPoint(
   centerY: number,
   widthFactor: number,
   heightFactor: number
-): [number, number] {
+): Point {
   let newX = x;
   let newY = y;
   if (x) newX = centerX + (x - centerX) * (1 + widthFactor);
@@ -346,6 +348,8 @@ import {
   Separator,
 } from "./utils/torso";
 import { drawHeadShape } from "./utils/head";
+
+import { adjustTailLength } from "./utils/tail";
 import { getEyeRegion, generateRandomEyes, drawEyes } from "./utils/eyes";
 import { generateLimbAttachmentPoints } from "./utils/limbs";
 //helper functions end here
@@ -448,7 +452,7 @@ export function renderCreature(
   //generate initial midpoints
   const tailMidpoints = generateMidpoints(separators);
   // Adjust separator length (creates new separators) based on length modifier
-  const tailLengthSeparators = adjustCreatureLength(
+  const tailLengthSeparators = adjustTailLength(
     tailSeparators,
     tailMidpoints,
     tailLengthFactor
