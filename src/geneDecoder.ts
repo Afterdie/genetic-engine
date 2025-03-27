@@ -347,6 +347,7 @@ import {
 } from "./utils/torso";
 import { drawHeadShape } from "./utils/head";
 import { getEyeRegion, generateRandomEyes, drawEyes } from "./utils/eyes";
+import { generateLimbAttachmentPoints } from "./utils/limbs";
 //helper functions end here
 export let ctx: CanvasRenderingContext2D;
 
@@ -466,11 +467,18 @@ export function renderCreature(
   createFilledShape(tailwidthLengthSeparators);
 
   // Draw the head separator
-  
+
   const headPoints = drawHeadShape(widthLengthSeparators[0], headLengthFactor);
   const eyeRegion = getEyeRegion(headPoints);
   const eyes = generateRandomEyes(eyeRegion, eyeCount);
   drawEyes(eyes, eyeRadius);
+
+  //LIMBS ATTACHING
+  const spinePoints = newMidpoints.slice(1) as [Point, Point, Point];
+  console.log(spinePoints.length);
+  spinePoints.reverse();
+  const limbAttachPoints = generateLimbAttachmentPoints(spinePoints, 10);
+  drawPoints(limbAttachPoints, "blue");
 
   return canvas.toDataURL();
 }
