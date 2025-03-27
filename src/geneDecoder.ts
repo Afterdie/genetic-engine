@@ -351,7 +351,11 @@ import { drawHeadShape } from "./utils/head";
 
 import { adjustTailLength } from "./utils/tail";
 import { getEyeRegion, generateRandomEyes, drawEyes } from "./utils/eyes";
-import { generateLimbAttachmentPoints } from "./utils/limbs";
+import {
+  generateLimbAttachmentPoints,
+  generateLimbs,
+  drawLimbs,
+} from "./utils/limbs";
 //helper functions end here
 export let ctx: CanvasRenderingContext2D;
 
@@ -400,6 +404,13 @@ export function renderCreature(
 
   const eyeCount = traits.eyeCount;
   const eyeRadius = 8;
+
+  const maxLimbWidth = 1 << TRAIT_DEFINITIONS["limbWidth"].bits;
+  const maxLimbLength = 1 << TRAIT_DEFINITIONS["limbLength"].bits;
+  const limbWidthFactor = traits.limbWidth / maxLimbWidth;
+  const limbLengthFactor = traits.limbLength / maxLimbLength;
+
+  const limbCount = traits.armCount * 2;
 
   //BODY GENERATION
   const torsoPath =
@@ -478,10 +489,21 @@ export function renderCreature(
 
   //LIMBS ATTACHING
   const spinePoints = newMidpoints.slice(1) as [Point, Point, Point];
-  console.log(spinePoints.length);
-  spinePoints.reverse();
   const limbAttachPoints = generateLimbAttachmentPoints(spinePoints, 10);
   drawPoints(limbAttachPoints, "blue");
+
+  //not the best option but oh well
+  const baseLimbWidth = limbCount > 5 ? 10 : 15;
+  const limbWidth = baseLimbWidth + baseLimbWidth * limbWidthFactor;
+  const limbLength = 60 + 60 * limbLengthFactor;
+
+  const limbs = generateLimbs(
+    limbAttachPoints,
+    limbCount,
+    limbWidth,
+    limbLength
+  );
+  drawLimbs(limbs);
 
   return canvas.toDataURL();
 }

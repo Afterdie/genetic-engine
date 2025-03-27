@@ -1,4 +1,5 @@
 import { Point } from "./torso";
+import { ctx } from "../geneDecoder";
 
 /**
  * Quadratic Bézier interpolation
@@ -54,6 +55,99 @@ function generateLimbAttachmentPoints(
 
   return attachmentPoints;
 }
+type Limb = { base: Point; tip: Point; thickness: number };
 
+function generateLimbs(
+  spinePoints: Point[],
+  limbCount: number,
+  limbWidth: number,
+  limbLength: number
+): Limb[] {
+  const limbs: Limb[] = [];
 
-export { generateLimbAttachmentPoints };
+  for (let i = 0; i < limbCount; i++) {
+    // Use linear interpolation to space limbs evenly
+    const t = i / (limbCount - 1); // Normalized position from 0 to 1
+    const index = Math.round(t * (spinePoints.length - 1)); // Map to spine indices
+
+    const base = spinePoints[index];
+
+    // Determine offset factor (negative for left, positive for right)
+    const centerIndex = Math.floor(spinePoints.length / 2);
+    const offsetFactor = (centerIndex - index) / centerIndex; // -1 (right) to 1 (left)
+
+    // Base remains exactly on the spine point
+    const adjustedBase: Point = [base[0], base[1]];
+
+    // Tip angles outward
+    const tipOffset = -offsetFactor * limbLength * 0.5; // Flip the direction
+    const tip: Point = [
+      adjustedBase[0] + tipOffset,
+      adjustedBase[1] + limbLength,
+    ];
+
+    limbs.push({ base: adjustedBase, tip, thickness: limbWidth });
+  }
+
+  return limbs;
+}
+
+function drawLimbs(limbs: Limb[]): void {
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  if (limbs.length === 0) return;
+
+  // Compute the spine center as the average X of all limb bases
+  const spineCenterX =
+    limbs.reduce((sum, limb) => sum + limb.base[0], 0) / limbs.length;
+
+  for (let i = 0; i < limbs.length; i++) {
+    const { base, tip, thickness } = limbs[i];
+    const limbLength = tip[1] - base[1];
+
+    // Define segment lengths
+    const upperLength = limbLength * 0.3;
+    const lowerLength = limbLength * 0.7;
+
+    let bendAmount;
+    let bendDirection;
+
+    if (limbs.length === 2) {
+      // Special case: exactly 2 limbs
+      bendAmount = thickness * (i === 0 ? 1.0 : 0.5); // First limb bends more
+      bendDirection = -1; // Both limbs bend left
+    } else {
+      // General case: Bend based on position relative to spine center
+      const distanceFromCenter = Math.abs(base[0] - spineCenterX);
+      const maxBend = thickness * 9;
+      bendAmount = (distanceFromCenter / spineCenterX) * maxBend;
+      bendDirection = base[0] < spineCenterX ? -1 : 1; // Left limb bends left, right bends right
+    }
+
+    const outwardOffset = bendDirection * bendAmount;
+
+    // Calculate joint (elbow) position with varied bend
+    const joint: Point = [base[0] + outwardOffset, base[1] + upperLength];
+
+    // Lower segment moves straight down
+    const lowerTip: Point = [joint[0], joint[1] + lowerLength];
+
+    // Draw upper segment (angled outward)
+    ctx.lineWidth = thickness;
+    ctx.strokeStyle = "black";
+
+    ctx.beginPath();
+    ctx.moveTo(base[0], base[1]);
+    ctx.lineTo(joint[0], joint[1]);
+    ctx.stroke();
+
+    // Draw lower segment (straight down)
+    ctx.beginPath();
+    ctx.moveTo(joint[0], joint[1]);
+    ctx.lineTo(lowerTip[0], lowerTip[1]);
+    ctx.stroke();
+  }
+}
+
+export { generateLimbAttachmentPoints, generateLimbs, drawLimbs };
