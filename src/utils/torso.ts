@@ -90,62 +90,124 @@ function adjustCreatureLength(
   lengthFactor: number
 ): Separator[] {
   lengthFactor /= 2.5;
-  if (midpoints.length < 3) return separators; // Need at least 3 midpoints
 
-  // Compute the central anchor (between 2nd and 3rd midpoint)
-  const centerAnchor: Point = [
-    (midpoints[1][0] + midpoints[2][0]) / 2,
-    (midpoints[1][1] + midpoints[2][1]) / 2,
-  ];
+  const lastIndex = separators.length - 1;
+  const midSeparator = getMidpointBetweenSeparators(
+    separators[1],
+    separators[2]
+  );
+  // const adjustedMidpoints: Point[] = [...midpoints];
 
-  const adjustedMidpoints: Point[] = [...midpoints];
-  const lastIndex = midpoints.length - 1;
+  // // Adjust the 2nd and 3rd midpoints towards the anchor
+  // for (let i of [1, 2]) {
+  //   const dx = centerAnchor[0] - midpoints[i][0];
+  //   const dy = centerAnchor[1] - midpoints[i][1];
 
-  // Adjust the 2nd and 3rd midpoints towards the anchor
-  for (let i of [1, 2]) {
-    const dx = centerAnchor[0] - midpoints[i][0];
-    const dy = centerAnchor[1] - midpoints[i][1];
+  //   // Move midpoint towards anchor by factor
+  //   adjustedMidpoints[i] = [
+  //     midpoints[i][0] + dx * lengthFactor,
+  //     midpoints[i][1] + dy * lengthFactor,
+  //   ];
+  // }
 
-    // Move midpoint towards anchor by factor
-    adjustedMidpoints[i] = [
-      midpoints[i][0] + dx * lengthFactor,
-      midpoints[i][1] + dy * lengthFactor,
-    ];
-  }
+  // // Adjust first and last midpoints
+  // // First midpoint moves towards the second midpoint
+  // {
+  //   const dx = adjustedMidpoints[1][0] - midpoints[0][0];
+  //   const dy = adjustedMidpoints[1][1] - midpoints[0][1];
 
-  // Adjust first and last midpoints
-  // First midpoint moves towards the second midpoint
-  {
-    const dx = adjustedMidpoints[1][0] - midpoints[0][0];
-    const dy = adjustedMidpoints[1][1] - midpoints[0][1];
+  //   adjustedMidpoints[0] = [
+  //     midpoints[0][0] + dx * lengthFactor,
+  //     midpoints[0][1] + dy * lengthFactor,
+  //   ];
+  // }
 
-    adjustedMidpoints[0] = [
-      midpoints[0][0] + dx * lengthFactor,
-      midpoints[0][1] + dy * lengthFactor,
-    ];
-  }
+  // // Last midpoint moves towards the second-to-last midpoint
+  // {
+  //   const dx = adjustedMidpoints[lastIndex - 1][0] - midpoints[lastIndex][0];
+  //   const dy = adjustedMidpoints[lastIndex - 1][1] - midpoints[lastIndex][1];
 
-  // Last midpoint moves towards the second-to-last midpoint
-  {
-    const dx = adjustedMidpoints[lastIndex - 1][0] - midpoints[lastIndex][0];
-    const dy = adjustedMidpoints[lastIndex - 1][1] - midpoints[lastIndex][1];
+  //   adjustedMidpoints[lastIndex] = [
+  //     midpoints[lastIndex][0] + dx * lengthFactor,
+  //     midpoints[lastIndex][1] + dy * lengthFactor,
+  //   ];
+  // }
 
-    adjustedMidpoints[lastIndex] = [
-      midpoints[lastIndex][0] + dx * lengthFactor,
-      midpoints[lastIndex][1] + dy * lengthFactor,
-    ];
-  }
-
+  // //moving the
+  // adjustedMidpoints[lastIndex] = [
+  //   (1 - lengthFactor) * adjustedMidpoints[lastIndex][0] +
+  //     lengthFactor * adjustedMidpoints[lastIndex - 1][0],
+  //   (1 - lengthFactor) * adjustedMidpoints[lastIndex][1] +
+  //     lengthFactor * adjustedMidpoints[lastIndex - 1][1],
+  // ];
   // Adjust separators by moving their respective points
-  const adjustedSeparators: Separator[] = separators.map(([p1, p2], index) => {
-    const dx = adjustedMidpoints[index][0] - midpoints[index][0];
-    const dy = adjustedMidpoints[index][1] - midpoints[index][1];
+  const adjustedSeparators: Separator[] = [...separators];
 
-    return [
-      [p1[0] + dx, p1[1] + dy],
-      [p2[0] + dx, p2[1] + dy],
-    ] as Separator; // ✅ Explicitly casting as Separator
-  });
+  //second separator to the right towards the
+
+  //move the second separator towards the midSeparator oo the right and the third separator towards the midSeparator to the left
+  adjustedSeparators[2] = [
+    [
+      (1 - lengthFactor) * separators[2][0][0] +
+        lengthFactor * midSeparator[0][0],
+      (1 - lengthFactor) * separators[2][0][1] +
+        lengthFactor * midSeparator[0][1],
+    ],
+    [
+      (1 - lengthFactor) * separators[2][1][0] +
+        lengthFactor * midSeparator[1][0],
+      (1 - lengthFactor) * separators[2][1][1] +
+        lengthFactor * midSeparator[1][1],
+    ],
+  ] as Separator;
+  adjustedSeparators[1] = [
+    [
+      (1 - lengthFactor) * separators[1][0][0] +
+        lengthFactor * midSeparator[0][0],
+      (1 - lengthFactor) * separators[1][0][1] +
+        lengthFactor * midSeparator[0][1],
+    ],
+    [
+      (1 - lengthFactor) * separators[1][1][0] +
+        lengthFactor * midSeparator[1][0],
+      (1 - lengthFactor) * separators[1][1][1] +
+        lengthFactor * midSeparator[1][1],
+    ],
+  ] as Separator;
+
+  //last separator to the left
+  const prevSeparator = adjustedSeparators[lastIndex - 1];
+  adjustedSeparators[lastIndex] = [
+    [
+      (1 - lengthFactor) * separators[lastIndex][0][0] +
+        lengthFactor * prevSeparator[0][0],
+      (1 - lengthFactor) * separators[lastIndex][0][1] +
+        lengthFactor * prevSeparator[0][1],
+    ],
+    [
+      (1 - lengthFactor) * separators[lastIndex][1][0] +
+        lengthFactor * prevSeparator[1][0],
+      (1 - lengthFactor) * separators[lastIndex][1][1] +
+        lengthFactor * prevSeparator[1][1],
+    ],
+  ] as Separator;
+
+  // Move the first separator to the right
+  const nextSeparator = adjustedSeparators[1];
+  adjustedSeparators[0] = [
+    [
+      (1 - lengthFactor) * separators[0][0][0] +
+        lengthFactor * nextSeparator[0][0],
+      (1 - lengthFactor) * separators[0][0][1] +
+        lengthFactor * nextSeparator[0][1],
+    ],
+    [
+      (1 - lengthFactor) * separators[0][1][0] +
+        lengthFactor * nextSeparator[1][0],
+      (1 - lengthFactor) * separators[0][1][1] +
+        lengthFactor * nextSeparator[1][1],
+    ],
+  ] as Separator;
 
   return adjustedSeparators;
 }
@@ -178,6 +240,21 @@ function createFilledShape(separators: Separator[]) {
   // Optional: add an outline
   ctx.strokeStyle = "black";
   ctx.stroke();
+}
+function getMidpointBetweenSeparators(
+  separator1: Separator,
+  separator2: Separator
+): Separator {
+  return [
+    [
+      (separator1[0][0] + separator2[0][0]) / 2,
+      (separator1[0][1] + separator2[0][1]) / 2,
+    ],
+    [
+      (separator1[1][0] + separator2[1][0]) / 2,
+      (separator1[1][1] + separator2[1][1]) / 2,
+    ],
+  ];
 }
 export {
   drawSeparators,
