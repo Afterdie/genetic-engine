@@ -480,8 +480,9 @@ export function renderCreature(gene: number, size: number = 400): string {
   createFilledShape(tailwidthLengthSeparators, shinyTailGradient);
 
   // Draw the head separator
-
+  ctx.fillStyle = primaryColor;
   const headPoints = drawHeadShape(widthLengthSeparators[0], headLengthFactor);
+  ctx.fill();
   const eyeRegion = getEyeRegion(headPoints);
   const eyes = generateRandomEyes(eyeRegion, eyeCount);
   drawEyes(eyes, eyeRadius);
