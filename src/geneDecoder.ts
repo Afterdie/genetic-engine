@@ -362,11 +362,9 @@ import {
 //helper functions end here
 export let ctx: CanvasRenderingContext2D;
 
-export function renderCreature(
-  traits: CreatureTraits,
-  size: number = 400
-): string {
+export function renderCreature(gene: number, size: number = 400): string {
   // Create a temporary canvas
+  const traits: CreatureTraits = decodeGene(gene);
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;

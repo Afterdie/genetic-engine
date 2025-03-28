@@ -11,7 +11,8 @@ function updateCreatureDisplay(traits: CreatureTraits) {
   creatureDisplay.innerHTML = "";
 
   // Create and display the creature image
-  const imageUrl = renderCreature(traits);
+  const gene = encodeGene(traits);
+  const imageUrl = renderCreature(gene);
   const img = document.createElement("img");
   img.src = imageUrl;
   img.style.width = "400px";
@@ -21,7 +22,6 @@ function updateCreatureDisplay(traits: CreatureTraits) {
   creatureDisplay.appendChild(img);
 
   // Display the gene value
-  const gene = encodeGene(traits);
   geneDisplay.textContent = `Gene: ${gene.toString(2).padStart(30, "0")}`;
 }
 
