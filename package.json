@@ -4,10 +4,11 @@
   "main": "index.js",
   "scripts": {
     "build": "npx esbuild src/geneDecoder.ts --bundle --format=esm --outfile=dist/geneDecoder.js --out-extension:.js=.js",
-    "minify": "npx terser dist/geneDecoder.js --compress --mangle --output dist/mini/geneDecoder.min.js"
+    "minify": "npx terser dist/geneDecoder.js --compress --mangle --output dist/geneDecoder.min.js",
+    "bazinga": "npm run build && npm run minify"
   },
   "keywords": [],
-  "author": "",
+  "author": "akshat",
   "license": "ISC",
   "description": "",
   "devDependencies": {
