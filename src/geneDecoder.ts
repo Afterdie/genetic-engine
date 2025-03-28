@@ -8,7 +8,6 @@ interface TraitDefinition {
 
 export interface CreatureTraits {
   shiny: number; // 1 bit at 34
-  rgbMode: number; // 1 bit at 33
   color1: number; // 6 bits at 27
   color2: number; // 6 bits at 21
   headLength: number; // 2 bits at 19
@@ -21,18 +20,16 @@ export interface CreatureTraits {
   tailLength: number; // 2 bits at 5
   eyeCount: number; // 2 bits at 3
   armCount: number; // 2 bits at 1
-  spikeDensity: number; // 2 bits at 0
 }
 
 // Define all traits and their bit sizes
 const TRAIT_SIZES: Record<keyof CreatureTraits, number> = {
   shiny: 1,
-  rgbMode: 1,
-  color1: 6,
+  headWidth: 1,
+  color1: 5,
   color2: 6,
   headLength: 2,
-  headWidth: 2,
-  torsoLength: 1,
+  torsoLength: 2,
   torsoWidth: 2,
   limbLength: 2,
   limbWidth: 2,
@@ -40,7 +37,6 @@ const TRAIT_SIZES: Record<keyof CreatureTraits, number> = {
   tailLength: 2,
   eyeCount: 2,
   armCount: 2,
-  spikeDensity: 2,
 };
 
 // Generate trait definitions dynamically
@@ -76,7 +72,6 @@ export function decodeGene(gene: number): CreatureTraits {
     traits[traitName as keyof CreatureTraits] =
       (gene >> definition.shift) & definition.mask;
   }
-
   return traits as CreatureTraits;
 }
 
@@ -89,8 +84,8 @@ export function encodeGene(traits: CreatureTraits): number {
     gene |= (value & definition.mask) << definition.shift;
   }
 
-  // Ensure we return a 30-bit number
-  return gene & 0x3fffffff;
+  // Ensure we return a 36-bit number
+  return gene & 0b1111111111111111111111111111111;
 }
 
 // Example of how to add a new trait:
@@ -364,6 +359,7 @@ export let ctx: CanvasRenderingContext2D;
 
 export function renderCreature(gene: number, size: number = 400): string {
   // Create a temporary canvas
+  console.log(gene);
   const traits: CreatureTraits = decodeGene(gene);
   const canvas = document.createElement("canvas");
   canvas.width = size;

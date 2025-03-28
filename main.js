@@ -1,4 +1,4 @@
-import { renderCreature, encodeGene } from "./dist/mini/geneDecoder.min.js";
+import { renderCreature, encodeGene } from "./dist/geneDecoder.js";
 // Function to update the creature display and gene display
 function updateCreatureDisplay(traits) {
   const creatureDisplay = document.getElementById("creature-display");
@@ -6,8 +6,9 @@ function updateCreatureDisplay(traits) {
   if (!creatureDisplay || !geneDisplay) return;
   // Clear previous content
   creatureDisplay.innerHTML = "";
-  // Create and display the creature image
-  const imageUrl = renderCreature(traits);
+  // Create and display the creature images
+  const gene = encodeGene(traits);
+  const imageUrl = renderCreature(gene);
   const img = document.createElement("img");
   img.src = imageUrl;
   img.style.width = "400px";
@@ -16,8 +17,8 @@ function updateCreatureDisplay(traits) {
   img.style.margin = "20px";
   creatureDisplay.appendChild(img);
   // Display the gene value
-  const gene = encodeGene(traits);
-  geneDisplay.textContent = `Gene: ${gene.toString(2).padStart(30, "0")}`;
+
+  geneDisplay.textContent = `Gene: ${gene.toString(2).padStart(31, "0")}`;
 }
 // Function to update value displays
 function updateValueDisplay(id, value) {
@@ -42,10 +43,8 @@ function updateToggleDisplay(id, checked) {
 // Function to get all trait values from sliders and toggles
 function getTraitValues() {
   const shinyInput = document.getElementById("shiny");
-  const rgbModeInput = document.getElementById("rgbMode");
   return {
     shiny: shinyInput.checked ? 1 : 0,
-    rgbMode: rgbModeInput.checked ? 1 : 0,
     color1: parseInt(document.getElementById("color1").value),
     color2: parseInt(document.getElementById("color2").value),
     headLength: parseInt(document.getElementById("headLength").value),
@@ -58,7 +57,6 @@ function getTraitValues() {
     tailLength: parseInt(document.getElementById("tailLength").value),
     eyeCount: parseInt(document.getElementById("eyeCount").value),
     armCount: parseInt(document.getElementById("armCount").value),
-    spikeDensity: parseInt(document.getElementById("spikeDensity").value),
   };
 }
 // Initialize the application

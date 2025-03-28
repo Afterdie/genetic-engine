@@ -47,11 +47,6 @@ export function drawHeadShape(
   ctx.lineTo(headPoints[3][0], headPoints[3][1]);
 
   // Close the path
-  ctx.closePath();
-
-  // Fill the shape
-  ctx.fillStyle = "black";
-  ctx.fill();
 
   return headPoints;
 }

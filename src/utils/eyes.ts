@@ -62,7 +62,8 @@ function generateRandomEyes(eyeRegion: Point[], eyeCount: number): Point[] {
 }
 
 function drawEyes(eyePositions: [number, number][], eyeRadius: number) {
-  ctx.fillStyle = "green";
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "black";
   eyePositions.forEach(([x, y]) => {
     ctx.beginPath();
     ctx.arc(x, y, eyeRadius, 0, Math.PI * 2);
